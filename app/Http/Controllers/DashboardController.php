@@ -2,27 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\BillStatus;
-use App\Enums\OrderStatus;
-use App\Enums\TableStatus;
-use App\Models\Bill;
-use App\Models\InventoryItem;
-use App\Models\Order;
-use App\Models\RestaurantTable;
+use App\Services\DashboardService;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View
+    public function __invoke(Request $request, DashboardService $dashboard): View
     {
-        return view('dashboard', [
-            'revenueToday' => Bill::where('status', BillStatus::Paid)->whereDate('paid_at', today())->sum('total'),
-            'ordersToday' => Order::whereDate('created_at', today())->count(),
-            'occupiedTables' => RestaurantTable::where('status', TableStatus::Occupied)->count(),
-            'unpaidBills' => Bill::whereIn('status', [BillStatus::Unpaid->value, BillStatus::Partial->value])->count(),
-            'processingOrders' => Order::whereIn('status', [OrderStatus::Pending->value, OrderStatus::Confirmed->value, OrderStatus::Preparing->value, OrderStatus::Ready->value])->count(),
-            'lowStock' => InventoryItem::whereColumn('current_stock', '<=', 'minimum_stock')->orderBy('current_stock')->limit(8)->get(),
-            'recentOrders' => Order::with('tableSession.restaurantTable', 'items')->latest()->limit(8)->get(),
+        $data = $request->validate([
+            'period' => ['nullable', Rule::in(['today', 'yesterday', '7days', '30days', 'month', 'last_month', 'quarter', 'year', 'custom'])],
+            'from' => ['nullable', 'date', 'required_if:period,custom'],
+            'to' => ['nullable', 'date', 'after_or_equal:from', 'required_if:period,custom'],
         ]);
+
+        return view('dashboard', $dashboard->data(
+            $data['period'] ?? 'today',
+            $data['from'] ?? null,
+            $data['to'] ?? null,
+        ));
     }
 }
