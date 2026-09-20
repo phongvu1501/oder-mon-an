@@ -14,8 +14,12 @@ class ReportController extends Controller
 {
     public function __invoke(Request $request): View
     {
-        $from = Carbon::parse($request->input('from', now()->startOfMonth()->toDateString()))->startOfDay();
-        $to = Carbon::parse($request->input('to', now()->toDateString()))->endOfDay();
+        $data = $request->validate([
+            'from' => ['nullable', 'date'],
+            'to' => ['nullable', 'date', 'after_or_equal:from'],
+        ]);
+        $from = Carbon::parse($data['from'] ?? now()->startOfMonth()->toDateString())->startOfDay();
+        $to = Carbon::parse($data['to'] ?? now()->toDateString())->endOfDay();
         if ($from->diffInDays($to) > 366) {
             $from = $to->copy()->subYear();
         }

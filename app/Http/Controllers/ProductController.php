@@ -22,6 +22,7 @@ class ProductController extends Controller
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($inner) => $inner->where('name', 'like', '%'.$request->q.'%')->orWhere('sku', 'like', '%'.$request->q.'%')))
             ->when($request->filled('category_id'), fn ($q) => $q->where('category_id', $request->category_id))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+            ->when($request->filled('availability'), fn ($q) => $q->where('is_available', $request->availability === 'available'))
             ->orderBy('sort_order')->latest()->paginate(config('restaurant.pagination'))->withQueryString();
 
         return view('products.index', ['products' => $products, 'categories' => Category::orderBy('name')->get()]);

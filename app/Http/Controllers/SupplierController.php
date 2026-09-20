@@ -12,7 +12,12 @@ class SupplierController extends Controller
 {
     public function index(Request $request): View
     {
-        $suppliers = Supplier::when($request->filled('q'), fn ($q) => $q->where('name', 'like', '%'.$request->q.'%'))
+        $suppliers = Supplier::when($request->filled('q'), fn ($q) => $q->where(fn ($inner) => $inner
+                ->where('name', 'like', '%'.$request->q.'%')
+                ->orWhere('contact_name', 'like', '%'.$request->q.'%')
+                ->orWhere('phone', 'like', '%'.$request->q.'%')
+                ->orWhere('email', 'like', '%'.$request->q.'%')))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->latest()->paginate(config('restaurant.pagination'))->withQueryString();
 
         return view('suppliers.index', compact('suppliers'));

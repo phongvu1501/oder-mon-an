@@ -68,9 +68,11 @@ class User extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
-        return $this->roles()
-            ->where('roles.status', RecordStatus::Active->value)
-            ->whereHas('permissions', fn ($query) => $query->where('name', $permission))
-            ->exists();
+        $this->loadMissing('roles.permissions');
+
+        return $this->roles
+            ->filter(fn (Role $role) => $role->status === RecordStatus::Active)
+            ->flatMap->permissions
+            ->contains('name', $permission);
     }
 }

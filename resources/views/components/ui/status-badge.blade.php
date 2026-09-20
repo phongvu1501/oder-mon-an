@@ -1,4 +1,4 @@
-@props(['status'])
+@props(['status', 'label' => null])
 @php
     $value = $status instanceof \BackedEnum ? $status->value : (string) $status;
     $labels = [
@@ -25,4 +25,4 @@
     ];
 @endphp
 <span class="badge badge-{{ $value }}"><span
-        class="badge-dot"></span>{{ $labels[$value] ?? ucfirst($value) }}</span>
+        class="badge-dot"></span>{{ $label ?? $labels[$value] ?? ucfirst($value) }}</span>

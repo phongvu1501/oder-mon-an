@@ -20,10 +20,16 @@ class PaymentController extends Controller
     public function index(Request $request): View
     {
         $payments = Payment::with('tableSession.restaurantTable', 'bill', 'confirmer')
+            ->when($request->filled('q'), fn ($query) => $query->where(fn ($inner) => $inner
+                ->where('payment_code', 'like', '%'.$request->string('q').'%')
+                ->orWhere('transaction_reference', 'like', '%'.$request->string('q').'%')
+                ->orWhereHas('bill', fn ($bill) => $bill->where('bill_code', 'like', '%'.$request->string('q').'%'))))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('method'), fn ($q) => $q->where('method', $request->method))
             ->latest()->paginate(config('restaurant.pagination'))->withQueryString();
-        $bills = Bill::with('tableSession.restaurantTable')->whereIn('status', ['unpaid', 'partial'])->latest()->get();
+        $bills = $request->user()->can('payments.create')
+            ? Bill::with('tableSession.restaurantTable')->whereIn('status', ['unpaid', 'partial'])->latest()->limit(100)->get()
+            : collect();
 
         return view('payments.index', compact('payments', 'bills'));
     }

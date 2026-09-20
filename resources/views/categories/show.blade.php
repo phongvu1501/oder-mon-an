@@ -16,7 +16,6 @@
         <dt>Thứ tự</dt>
         <dd>{{ $category->sort_order }}</dd>
         <dt>Trạng thái</dt>
-        <dd><span class="badge badge-{{ $category->status->value }}">{{ $category->status->value }}</span></dd>
+        <dd><x-ui.status-badge :status="$category->status" /></dd>
     </dl>
 </div>@endsection
-

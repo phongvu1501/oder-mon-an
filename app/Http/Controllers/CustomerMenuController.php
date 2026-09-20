@@ -27,8 +27,8 @@ class CustomerMenuController extends Controller
         $request->session()->put('customer.qr_token_hash', hash('sha256', $token));
 
         $categories = Category::query()->where('status', RecordStatus::Active)
-            ->whereHas('products', fn ($q) => $q->where('status', RecordStatus::Active)->where('is_available', true))
-            ->with(['products' => fn ($q) => $q->where('status', RecordStatus::Active)->where('is_available', true)->orderBy('sort_order')])
+            ->whereHas('products', fn ($q) => $q->where('status', RecordStatus::Active))
+            ->with(['products' => fn ($q) => $q->where('status', RecordStatus::Active)->orderBy('sort_order')->orderBy('name')])
             ->orderBy('sort_order')->get();
 
         return view('customer.menu', [

@@ -13,7 +13,7 @@
     <section class="panel">
         <dl class="detail-list">
             <dt>Trạng thái</dt>
-            <dd><span class="badge badge-{{ $table->status->value }}">{{ $table->status->value }}</span></dd>
+            <dd><x-ui.status-badge :status="$table->status" /></dd>
             <dt>Sức chứa</dt>
             <dd>{{ $table->capacity }} khách</dd>
             <dt>Phiên hiện tại</dt>

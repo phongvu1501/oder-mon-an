@@ -65,7 +65,8 @@ class ProfileController extends Controller
             throw ValidationException::withMessages(['current_password' => 'Mật khẩu hiện tại không chính xác.']);
         }
 
-        $user->update(['password' => $data['password'], 'token_version' => $user->token_version + 1]);
+        $user->forceFill(['password' => $data['password']])->save();
+        $user->increment('token_version');
         $this->activity->write('change_password', 'users', $user);
 
         return redirect()->route('login')

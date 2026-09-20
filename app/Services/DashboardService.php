@@ -51,8 +51,18 @@ class DashboardService
             ->select('order_items.product_name', 'categories.name as category_name', DB::raw('SUM(order_items.quantity) AS quantity'), DB::raw('SUM(order_items.subtotal) AS revenue'))
             ->groupBy('order_items.product_name', 'categories.name')->orderByDesc('quantity')->limit(8)->get();
 
-        $paymentMethods = Payment::query()->where('status', PaymentStatus::Paid)->whereBetween('paid_at', [$from, $to])
-            ->select('method', DB::raw('SUM(amount) AS amount'))->groupBy('method')->pluck('amount', 'method');
+        $ordersByPeriod = $ordersByDate->pluck('aggregate', 'period');
+        $revenueByPeriod = $revenueByDate->pluck('aggregate', 'period');
+        $timelinePeriods = $ordersByPeriod->keys()->merge($revenueByPeriod->keys())->unique()->sort()->values();
+        $statusLabels = [
+            'pending' => 'Đang chờ',
+            'confirmed' => 'Đã xác nhận',
+            'preparing' => 'Đang chuẩn bị',
+            'ready' => 'Sẵn sàng',
+            'served' => 'Đã phục vụ',
+            'completed' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy',
+        ];
 
         $tableCounts = RestaurantTable::query()->select('status', DB::raw('COUNT(*) AS aggregate'))->groupBy('status')->pluck('aggregate', 'status');
         $inventoryTotal = InventoryItem::count();
@@ -78,16 +88,15 @@ class DashboardService
                 'out_of_stock' => $outOfStockCount,
             ],
             'charts' => [
-                'timeline_labels' => $ordersByDate->pluck('period'),
-                'orders' => $ordersByDate->pluck('aggregate')->map(fn ($value) => (int) $value),
-                'revenue_labels' => $revenueByDate->pluck('period'),
-                'revenue' => $revenueByDate->pluck('aggregate')->map(fn ($value) => (float) $value),
-                'status_labels' => $orderStatuses->keys(),
-                'status_values' => $orderStatuses->values()->map(fn ($value) => (int) $value),
-                'payment_labels' => $paymentMethods->keys(),
-                'payment_values' => $paymentMethods->values()->map(fn ($value) => (float) $value),
-                'top_product_labels' => $topProducts->pluck('product_name'),
-                'top_product_values' => $topProducts->pluck('quantity')->map(fn ($value) => (int) $value),
+                'timeline' => [
+                    'labels' => $timelinePeriods->map(fn ($date) => CarbonImmutable::parse($date)->format('d/m')),
+                    'orders' => $timelinePeriods->map(fn ($date) => (int) ($ordersByPeriod[$date] ?? 0)),
+                    'revenue' => $timelinePeriods->map(fn ($date) => (float) ($revenueByPeriod[$date] ?? 0)),
+                ],
+                'statuses' => [
+                    'labels' => $orderStatuses->keys()->map(fn ($status) => $statusLabels[$status] ?? $status),
+                    'values' => $orderStatuses->values()->map(fn ($value) => (int) $value),
+                ],
             ],
             'recentOrders' => Order::with('tableSession.restaurantTable')->whereBetween('created_at', [$from, $to])->latest()->limit(8)->get(),
             'topProducts' => $topProducts,

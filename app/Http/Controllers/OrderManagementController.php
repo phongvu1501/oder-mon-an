@@ -18,6 +18,11 @@ class OrderManagementController extends Controller
     public function index(Request $request): View
     {
         $orders = Order::with('tableSession.restaurantTable', 'items')
+            ->when($request->filled('q'), fn ($query) => $query->where(fn ($inner) => $inner
+                ->where('order_code', 'like', '%'.$request->string('q').'%')
+                ->orWhereHas('tableSession.restaurantTable', fn ($table) => $table
+                    ->where('name', 'like', '%'.$request->string('q').'%')
+                    ->orWhere('code', 'like', '%'.$request->string('q').'%'))))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->when($request->filled('date'), fn ($q) => $q->whereDate('created_at', $request->date))
             ->latest()->paginate(config('restaurant.pagination'))->withQueryString();

@@ -15,9 +15,16 @@ class RoleController extends Controller
 {
     public function __construct(private readonly ActivityLogService $activity) {}
 
-    public function index(): View
+    public function index(Request $request): View
     {
-        return view('roles.index', ['roles' => Role::withCount(['users', 'permissions'])->paginate(config('restaurant.pagination'))]);
+        $roles = Role::query()->withCount(['users', 'permissions'])
+            ->when($request->filled('q'), fn ($query) => $query->where(fn ($inner) => $inner
+                ->where('name', 'like', '%'.$request->string('q').'%')
+                ->orWhere('slug', 'like', '%'.$request->string('q').'%')))
+            ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')))
+            ->orderBy('name')->paginate(config('restaurant.pagination'))->withQueryString();
+
+        return view('roles.index', compact('roles'));
     }
 
     public function create(): View

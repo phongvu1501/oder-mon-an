@@ -43,7 +43,7 @@ class AuthController extends Controller
             throw ValidationException::withMessages(['email' => 'Thông tin đăng nhập không chính xác hoặc tài khoản đã bị khóa.']);
         }
 
-        $user->update(['last_login_at' => now()]);
+        $user->forceFill(['last_login_at' => now()])->save();
         Auth::setUser($user);
         $this->activity->write('login', 'authentication', $user, request: $request);
         $tokens = $this->tokens($user);

@@ -23,6 +23,7 @@ class InventoryController extends Controller
         $items = InventoryItem::query()
             ->when($request->filled('q'), fn ($q) => $q->where(fn ($i) => $i->where('name', 'like', '%'.$request->q.'%')->orWhere('sku', 'like', '%'.$request->q.'%')))
             ->when($request->low === '1', fn ($q) => $q->whereColumn('current_stock', '<=', 'minimum_stock'))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
             ->orderBy('name')->paginate(config('restaurant.pagination'))->withQueryString();
 
         return view('inventory.index', compact('items'));
@@ -51,10 +52,15 @@ class InventoryController extends Controller
         return back()->with('success', 'Đã chuyển nguyên liệu vào thùng rác.');
     }
 
-    public function transactions(): View
+    public function transactions(Request $request): View
     {
         return view('inventory.transactions', [
-            'transactions' => InventoryTransaction::with('items.inventoryItem', 'supplier')->latest()->paginate(config('restaurant.pagination')),
+            'transactions' => InventoryTransaction::with('items.inventoryItem', 'supplier')
+                ->when($request->filled('q'), fn ($query) => $query->where(fn ($inner) => $inner
+                    ->where('transaction_code', 'like', '%'.$request->string('q').'%')
+                    ->orWhere('reason', 'like', '%'.$request->string('q').'%')))
+                ->when($request->filled('type'), fn ($query) => $query->where('type', $request->string('type')))
+                ->latest()->paginate(config('restaurant.pagination'))->withQueryString(),
             'items' => InventoryItem::where('status', 'active')->orderBy('name')->get(),
             'suppliers' => Supplier::where('status', 'active')->orderBy('name')->get(),
         ]);

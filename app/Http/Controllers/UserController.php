@@ -19,9 +19,10 @@ class UserController extends Controller
     {
         $users = User::with('roles')->when($request->filled('q'), fn ($q) => $q->where(fn ($i) => $i->where('name', 'like', '%'.$request->q.'%')->orWhere('email', 'like', '%'.$request->q.'%')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
+            ->when($request->filled('role_id'), fn ($q) => $q->whereHas('roles', fn ($role) => $role->whereKey($request->integer('role_id'))))
             ->latest()->paginate(config('restaurant.pagination'))->withQueryString();
 
-        return view('users.index', compact('users'));
+        return view('users.index', ['users' => $users, 'roles' => Role::where('status', 'active')->orderBy('name')->get()]);
     }
 
     public function create(): View
@@ -57,12 +58,14 @@ class UserController extends Controller
         $data = $this->data($request, $user);
         $roles = $data['roles'];
         unset($data['roles']);
-        if (empty($data['password'])) {
+        $shouldRevokeTokens = ! empty($data['password']);
+        if (! $shouldRevokeTokens) {
             unset($data['password']);
-        } else {
-            $data['token_version'] = $user->token_version + 1;
         }
         $user->update($data);
+        if ($shouldRevokeTokens) {
+            $user->increment('token_version');
+        }
         $user->roles()->sync($roles);
         $this->activity->write('update', 'users', $user, $old, $user->fresh()->load('roles')->toArray());
 
@@ -74,7 +77,8 @@ class UserController extends Controller
         if ($request->user()->is($user)) {
             return back()->with('error', 'Không thể tự khóa tài khoản đang sử dụng.');
         }
-        $user->update(['status' => 'inactive', 'token_version' => $user->token_version + 1]);
+        $user->update(['status' => 'inactive']);
+        $user->increment('token_version');
         $user->delete();
         $this->activity->write('delete', 'users', $user);
 
@@ -84,7 +88,8 @@ class UserController extends Controller
     public function resetPassword(Request $request, User $user): RedirectResponse
     {
         $data = $request->validate(['password' => ['required', 'string', 'min:8', 'confirmed']]);
-        $user->update(['password' => Hash::make($data['password']), 'token_version' => $user->token_version + 1]);
+        $user->update(['password' => Hash::make($data['password'])]);
+        $user->increment('token_version');
         $this->activity->write('reset_password', 'users', $user);
 
         return back()->with('success', 'Đã đặt lại mật khẩu và thu hồi token cũ.');
