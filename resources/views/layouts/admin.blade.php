@@ -60,11 +60,38 @@
                     <div class="nav-label">Kho</div>
                 @endcanany
                 @can('inventory.view')
+                    <a class="nav-link {{ request()->routeIs('inventory.dashboard') ? 'active' : '' }}" href="{{ route('inventory.dashboard') }}"><i data-lucide="layout-dashboard"></i><span>Thông kê kho</span></a>
+                @endcan
+                @can('inventory.view')
                     <a class="nav-link {{ request()->routeIs('inventory.index') ? 'active' : '' }}"
                         href="{{ route('inventory.index') }}"><i data-lucide="boxes"></i><span>Tồn kho</span></a>
                     <a class="nav-link {{ request()->routeIs('inventory.transactions') ? 'active' : '' }}"
                         href="{{ route('inventory.transactions') }}"><i data-lucide="arrow-left-right"></i><span>Giao dịch
                             kho</span></a>
+                @endcan
+                @can('inventory.receive')
+                    <a class="nav-link {{ request()->routeIs('inventory.receipts.*') ? 'active' : '' }}" href="{{ route('inventory.receipts.index') }}"><i data-lucide="package-plus"></i><span>Nhập kho</span></a>
+                @endcan
+                @can('inventory.issue')
+                    <a class="nav-link {{ request()->routeIs('inventory.issues.*') ? 'active' : '' }}" href="{{ route('inventory.issues.index') }}"><i data-lucide="package-minus"></i><span>Xuất kho</span></a>
+                @endcan
+                @can('inventory.adjust')
+                    <a class="nav-link {{ request()->routeIs('inventory.adjustments.*') ? 'active' : '' }}" href="{{ route('inventory.adjustments.index') }}"><i data-lucide="sliders-horizontal"></i><span>Điều chỉnh kho</span></a>
+                @endcan
+                @can('inventory.waste')
+                    <a class="nav-link {{ request()->routeIs('inventory.waste.*') ? 'active' : '' }}" href="{{ route('inventory.waste.index') }}"><i data-lucide="trash-2"></i><span>Hao hụt / huỷ</span></a>
+                @endcan
+                @can('inventory.stocktake')
+                    <a class="nav-link {{ request()->routeIs('inventory.stocktakes.*') ? 'active' : '' }}" href="{{ route('inventory.stocktakes.index') }}"><i data-lucide="clipboard-check"></i><span>Kiểm kê</span></a>
+                @endcan
+                @can('inventory.transfer')
+                    <a class="nav-link {{ request()->routeIs('inventory.transfers.*') ? 'active' : '' }}" href="{{ route('inventory.transfers.index') }}"><i data-lucide="repeat-2"></i><span>Chuyển kho</span></a>
+                @endcan
+                @can('inventory.report')
+                    <a class="nav-link {{ request()->routeIs('inventory.reports.*') ? 'active' : '' }}" href="{{ route('inventory.reports.index') }}"><i data-lucide="chart-no-axes-combined"></i><span>Báo cáo kho</span></a>
+                @endcan
+                @can('inventory.manage')
+                    <a class="nav-link {{ request()->routeIs('inventory.units.*') ? 'active' : '' }}" href="{{ route('inventory.units.index') }}"><i data-lucide="ruler"></i><span>Đơn vị tính</span></a>
                 @endcan
                 @can('suppliers.view')
                     <a class="nav-link {{ request()->routeIs('suppliers.*') ? 'active' : '' }}"

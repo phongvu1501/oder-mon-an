@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Recipe extends Model
 {
-    protected $fillable = ['product_id', 'yield_quantity'];
+    protected $fillable = ['product_id', 'yield_quantity', 'yield_unit_id', 'version', 'status', 'note'];
 
     protected function casts(): array
     {
-        return ['yield_quantity' => 'decimal:3'];
+        return ['yield_quantity' => 'decimal:3', 'version' => 'integer'];
     }
 
     public function product(): BelongsTo
@@ -23,5 +23,10 @@ class Recipe extends Model
     public function items(): HasMany
     {
         return $this->hasMany(RecipeItem::class);
+    }
+
+    public function yieldUnit(): BelongsTo
+    {
+        return $this->belongsTo(Unit::class, 'yield_unit_id');
     }
 }

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\InventoryItem;
 use App\Models\Product;
+use App\Models\Unit;
+use App\Http\Requests\UpdateRecipeRequest;
+use App\Services\RecipeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +19,15 @@ class RecipeController extends Controller
         return view('recipes.form', [
             'product' => $product->load('recipe.items.inventoryItem'),
             'inventoryItems' => InventoryItem::where('status', 'active')->orderBy('name')->get(),
+            'units' => Unit::where('status', 'active')->orderBy('category')->orderBy('name')->get(),
         ]);
     }
 
-    public function update(Request $request, Product $product): RedirectResponse
+    public function update(UpdateRecipeRequest $request, Product $product): RedirectResponse
     {
+        app(RecipeService::class)->save($product, $request->validated());
+        return redirect()->route('products.show', $product)->with('success', 'Recipe updated.');
+
         $data = $request->validate([
             'yield_quantity' => ['required', 'decimal:0,3', 'gt:0'],
             'items' => ['required', 'array', 'min:1', 'max:30'],

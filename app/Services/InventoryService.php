@@ -14,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class InventoryService
 {
+    public function __construct(private readonly InventoryMovementService $movements) {}
+
     public function record(
         InventoryTransactionType $type,
         array $lines,
@@ -22,6 +24,8 @@ class InventoryService
         ?int $userId = null,
         ?Model $reference = null,
     ): InventoryTransaction {
+        return $this->movements->record($type, $lines, $reason, $supplierId, $userId, $reference);
+
         return DB::transaction(function () use ($type, $lines, $reason, $supplierId, $userId, $reference) {
             $lines = collect($lines)->sortBy('inventory_item_id')->values();
             $items = InventoryItem::query()
@@ -73,6 +77,8 @@ class InventoryService
 
     public function deductForOrder(Order $order, ?int $userId = null): ?InventoryTransaction
     {
+        return $this->movements->deductForOrder($order, $userId);
+
         $order->loadMissing('items.product.recipe.items');
         $requirements = [];
 

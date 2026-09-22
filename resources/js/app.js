@@ -249,6 +249,7 @@ function initInventoryEditor() {
     const modal = document.getElementById('inventory-edit-modal');
     const form = modal?.querySelector('[data-inventory-form]');
     if (!modal || !form) return;
+    document.querySelectorAll('[name="cost_price"]').forEach((field) => { field.disabled = true; });
     let previousFocus = null;
     const close = () => {
         modal.classList.remove('is-open');
@@ -262,6 +263,7 @@ function initInventoryEditor() {
         form.elements.name.value = button.dataset.name;
         form.elements.sku.value = button.dataset.sku;
         form.elements.unit.value = button.dataset.unit;
+        form.elements.base_unit_id.value = button.dataset.baseUnit;
         form.elements.minimum_stock.value = button.dataset.minimum;
         form.elements.cost_price.value = button.dataset.cost;
         form.elements.status.value = button.dataset.status;

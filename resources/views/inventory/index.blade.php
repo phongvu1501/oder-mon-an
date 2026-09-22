@@ -17,6 +17,7 @@
                 </div><i data-lucide="package-plus"></i>
             </div>
             <form method="post" action="{{ route('inventory.items.store') }}">@csrf<div class="form-grid">
+                <input type="hidden" name="base_unit_id" value="{{ $units->first()?->id }}">
                     <div><label class="form-label" for="item-name">Tên nguyên liệu <span class="required">*</span></label><input
                             class="form-control" id="item-name" name="name" required maxlength="255"></div>
                     <div><label class="form-label" for="item-sku">SKU <span class="required">*</span></label><input
@@ -82,6 +83,7 @@
                                         data-action="{{ route('inventory.items.update', $item) }}"
                                         data-name="{{ $item->name }}" data-sku="{{ $item->sku }}"
                                         data-unit="{{ $item->unit }}" data-minimum="{{ $item->minimum_stock }}"
+                                        data-base-unit="{{ $item->base_unit_id }}"
                                         data-cost="{{ $item->cost_price }}" data-status="{{ $item->status->value }}"><i
                                             data-lucide="pencil"></i></button>
                                     <form method="post" action="{{ route('inventory.items.destroy', $item) }}"
@@ -116,6 +118,7 @@
                             data-lucide="x"></i></button>
                 </header>
                 <form method="post" data-inventory-form>@csrf @method('put')<div class="modal-content">
+                    <input type="hidden" name="base_unit_id" value="{{ $units->first()?->id }}">
                         <div class="form-grid">
                             <div class="form-group full"><label class="form-label" for="edit-item-name">Tên nguyên
                                     liệu</label><input class="form-control" id="edit-item-name" name="name" required>

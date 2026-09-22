@@ -8,6 +8,7 @@
         <a class="btn btn-secondary" href="{{ route('inventory.index') }}"><i data-lucide="boxes"></i>Tồn
             kho</a></x-ui.page-header>
 
+    @if(false)
     @can('inventory.adjust')
         <section class="panel" style="margin-bottom:18px">
             <div class="section-heading">
@@ -91,6 +92,7 @@
             </form>
         </section>
     @endcan
+    @endif
 
     <form method="get"><x-ui.filter-bar :reset-url="route('inventory.transactions')"><input class="form-control" name="q"
                 value="{{ request('q') }}" placeholder="Mã giao dịch hoặc lý do" aria-label="Tìm giao dịch kho"><select
@@ -102,6 +104,7 @@
             </select>
         </x-ui.filter-bar></form>
     @php $typeLabels = ['in' => 'Nhập kho', 'out' => 'Xuất kho', 'adjustment' => 'Điều chỉnh', 'waste' => 'Hủy / hỏng', 'return' => 'Hoàn kho']; @endphp
+    @php $typeLabels += ['adjustment_in'=>'Điều chỉnh tăng','adjustment_out'=>'Điều chỉnh giảm','transfer_out'=>'Chuyển kho đi','transfer_in'=>'Chuyển kho đến','stocktake_adjustment'=>'Chênh lệch kiểm kê','return_to_supplier'=>'Trả nhà cung cấp','customer_return'=>'Khách trả hàng']; @endphp
     <div class="table-wrap">
         <table class="data-table">
             <thead>
@@ -127,7 +130,8 @@
                                 <div>{{ $line->inventoryItem->name }}:
                                     <strong>{{ number_format($line->quantity, 3) }}</strong> <span
                                         class="cell-meta">({{ number_format($line->before_quantity, 3) }} →
-                                        {{ number_format($line->after_quantity, 3) }})</span></div>
+                                        {{ number_format($line->after_quantity, 3) }})</span>
+                                </div>
                             @endforeach
                         </td>
                         <td>{{ $transaction->supplier?->name ?: '—' }}</td>

@@ -92,8 +92,10 @@ class OrderService
                 $changes += ['confirmed_by' => $userId, 'confirmed_at' => now()];
             }
             if ($next === OrderStatus::Preparing && ! $locked->inventory_deducted_at) {
-                $this->inventory->deductForOrder($locked, $userId);
-                $changes['inventory_deducted_at'] = now();
+                $transaction = $this->inventory->deductForOrder($locked, $userId);
+                if ($transaction) {
+                    $changes['inventory_deducted_at'] = now();
+                }
             }
 
             $locked->update($changes);
