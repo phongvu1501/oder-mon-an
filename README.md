@@ -29,16 +29,6 @@ Do not use `migrate:fresh` or `db:wipe` on an existing installation. Start local
 
 ## Environment
 
-```dotenv
-APP_NAME=OderMonAn
-APP_TIMEZONE=Asia/Ho_Chi_Minh
-APP_LOCALE=vi
-RESTAURANT_NAME=OderMonAn
-RESTAURANT_PAGINATION=15
-JWT_TTL=60
-JWT_REFRESH_TTL=20160
-```
-
 Generate an independent JWT secret of at least 32 random bytes. If `JWT_SECRET` is empty, the local app key is used as fallback. Never commit the real `.env`, JWT secret, database credentials, or bank data.
 
 ```powershell
@@ -48,14 +38,6 @@ php -r "echo bin2hex(random_bytes(32));"
 ## Demo accounts
 
 All local demo accounts use password `Password@123`.
-
-| Role | Email |
-|---|---|
-| Super Admin | `superadmin@odermonan.test` |
-| Admin | `admin@odermonan.test` |
-| Manager | `manager@odermonan.test` |
-| Staff | `staff@odermonan.test` |
-| Kitchen | `kitchen@odermonan.test` |
 
 Change or remove demo credentials before real deployment.
 
