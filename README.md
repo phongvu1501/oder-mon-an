@@ -35,12 +35,6 @@ Generate an independent JWT secret of at least 32 random bytes. If `JWT_SECRET` 
 php -r "echo bin2hex(random_bytes(32));"
 ```
 
-## Demo accounts
-
-All local demo accounts use password `Password@123`.
-
-Change or remove demo credentials before real deployment.
-
 ## Architecture
 
 Controllers validate and authorize requests, then delegate transactional rules to focused services:
